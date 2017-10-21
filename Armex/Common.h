@@ -1,0 +1,16 @@
+
+
+
+#define DEBUG_OUTPUT
+
+#define FLEX_PIN A1
+
+#define MPU_SAMPLES_COUNT 5
+#define BENDING_SAMPLES_COUNT 20
+
+
+const float RAD_DEG=180.0f/M_PI;
+
+#define DETECTION_THRESHOLD 30
+#define DETECTION_TIME 0.1
+#define DETECTION_TIMEOUT 2
