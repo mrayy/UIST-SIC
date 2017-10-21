@@ -53,6 +53,7 @@ public:
     Serial.println(name);
     
     mpu.initialize();
+    
     pinMode(intID, INPUT);
     // load and configure the DMP
    // Serial.println(F("Initializing DMP..."));
@@ -168,12 +169,12 @@ public:
        }else{
           Serial.println("Gyro X axis calibration failed");}
           
-      if(autocalibrate('G','y',mpu)){
+      if(autocalibrate('g','y',mpu)){
                Serial.println("Gyro Y axis calibrated");
       }else{
           Serial.println("Gyro Y axis calibration failed");}
           
-      if(autocalibrate('g','Z',mpu)){
+      if(autocalibrate('g','z',mpu)){
                Serial.println("Gyro Z axis calibrated");
       }else{
           Serial.println("Gyro Z axis calibration failed");}
@@ -185,17 +186,17 @@ public:
       }else{
           Serial.println("Accel X axis calibration failed");}
           
-      if(autocalibrate('A','Y',mpu)){
+      if(autocalibrate('a','y',mpu)){
                Serial.println("Accel Y axis calibrated");
       }else{
           Serial.println("Accel Y axis calibration failed");}
           
-     if(autocalibrate('A','Z',mpu)){
+     if(autocalibrate('a','z',mpu)){
                Serial.println("Accel Z axis calibrated");
       }else{
           Serial.println("Accel Z axis calibration failed");}
 
-          
+         
 // load and configure the DMP
     Serial.println(F("Initializing DMP..."));
     int devStatus = mpu.dmpInitialize();
@@ -228,7 +229,7 @@ public:
   }
 };
 
-   MPUStatus _mpu[2]={MPUStatus(0x68),MPUStatus(0x69)};
+   MPUStatus _mpu[2]={MPUStatus(0x69),MPUStatus(0x68)};
 
 void dmpDataReady0() {
     _mpu[0].mpuInterrupt = true;
@@ -240,29 +241,27 @@ void dmpDataReady1() {
 class BendingSensor
 {
   int16_t _min,_max;
-  Average<int16_t> bendingSmoothed;
+ // Average<int16_t> bendingSmoothed;
   float value;
   bool _calibrating;
-  int _pin;
  public:
- BendingSensor():bendingSmoothed(BENDING_SAMPLES_COUNT),value(0),_calibrating(false),_min(0),_max(1023)
+ BendingSensor():/*bendingSmoothed(BENDING_SAMPLES_COUNT)*/value(0),_calibrating(false),_min(0),_max(1023)
  {}
-  void Initialize(int pin)
+  void Initialize()
   {
-    _pin=pin;
-    pinMode(_pin, INPUT);
+    pinMode(FLEX_PIN, INPUT);
     
   }
   void Update()
   {
-    int val = analogRead(_pin);
+    value = analogRead(FLEX_PIN);
     if(_calibrating){
-      if(val<_min)
-        _min=val;
-      if(val>_max)
-        _max=val;
+      if(value<_min)
+        _min=value;
+      if(value>_max)
+        _max=value;
     }else{
-      bendingSmoothed.push(val);
+      //bendingSmoothed.push(val);
       /*Serial.print(val);
       Serial.print(",  ");
       Serial.println(bendingSmoothed.mean());*/
@@ -271,11 +270,11 @@ class BendingSensor
 
   float Value(){
     
-    return (float)(bendingSmoothed.mean()-_min)/(float)(_max-_min);
+    return (float)(value-_min)/(float)(_max-_min);//bendingSmoothed.mean()
   }
   float RawValue(){
     
-    return bendingSmoothed.mean();
+    return value;//bendingSmoothed.mean();
   }
 
 
@@ -449,10 +448,13 @@ class DetectionManager
       case 0://actuation state
       if(dt>DETECTION_TIME)
       {
+        Serial.print("Check:  ");
+        Serial.println(angle);
         if(angle>DETECTION_THRESHOLD && detectOpen || 
            angle<-DETECTION_THRESHOLD && !detectOpen)
         {
           state=1;
+        Serial.println("State 1 ");
         }
         currentMillis=millis();
         currentTilt=angle;
@@ -464,6 +466,7 @@ class DetectionManager
         {
           state=2;
           result=true;
+        Serial.println("State 2 ");
         }
         currentMillis=millis();
         currentTilt=angle;

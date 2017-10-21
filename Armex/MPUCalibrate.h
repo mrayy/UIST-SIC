@@ -2,7 +2,7 @@
 #include "Average.h"
 
 
-#define ModeRange 50
+#define ModeRange 100
 #define StabilityTime 25000 //25 seconds, could be 40secs, only for dmp
 #define AllowedRange 150    //this is value is in range round zero that is acceptable and no calibration of that axis is done.
 #define GyroStepSize  1
@@ -163,8 +163,8 @@ int16_t getValue(char sensor, char axis,MPU6050 mpu ){
     }else if(axis !='x' && axis !='X' && axis !='y' && axis !='Y' && axis !='z' && axis !='Z'){ //if user enters anything except x X y Y z or Z return false
           return 0;}
 
+        Serial.println("Begin Sampling");
    for(ii=0; ii<=ModeRange; ii++){
-        
           switch(sensor){ //sensor can be accelerometer or gyroscope.
             case 'a'://acceleormeter is a or A
             case 'A':
@@ -212,6 +212,7 @@ int16_t getValue(char sensor, char axis,MPU6050 mpu ){
         
         }
   Final=Mode.mode();
+        Serial.println("Done Sampling");
 
   return Final;
     }

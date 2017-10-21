@@ -13,6 +13,9 @@ BendingSensor bending;
 DetectionManager detector;
 float euler[3];
 
+bool _printData=false;
+
+
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -24,8 +27,8 @@ void setup() {
     while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
     mpus.Initialize();
-    bending.Initialize(A1);
-    braccio.Initialize();
+    bending.Initialize();
+    //braccio.Initialize();
 
     
     // wait for ready
@@ -58,7 +61,6 @@ void PrintData(float* e)
       Serial.println();
 }
 
-bool _printData=false;
 
 void CheckInput()
 {
@@ -98,23 +100,24 @@ void loop() {
     if(triggered)
     {
        braccio.SetEngaged(!braccio.IsEngaged());
+       Serial.println("Triggered");
     }
 
-   /* mpus.GetWristAngles(euler);
+    mpus.GetWristAngles(euler);
     if(_printData)
       PrintData(euler);
 
     mpus.GetHandAngles(euler);
     if(_printData)
       PrintData(euler);
-*/
+
   float b=bending.Value();
     if(_printData)
       PrintData(euler);
 
    braccio.Update(euler,b);
 
-   Serial.println(b);
+   //Serial.println(b);
       
     if(_printData)
       Serial.println();

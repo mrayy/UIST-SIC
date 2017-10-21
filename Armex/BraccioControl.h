@@ -11,13 +11,19 @@ Servo wrist_rot;
 Servo wrist_ver;
 Servo gripper;
 
+#define PitchWeights0 -0.5
+#define PitchWeights1 -0.25
+#define PitchWeights2 -0.25
+
+#define PitchOffsets0 45
+#define PitchOffsets1 45
+#define PitchOffsets2 0
+
 
 class BraccioManager
 {
   bool _isEngaged;
 
-  float _PitchWeights[3];
-  float _PitchOffsets[3];
 public:
   bool Initialize()
   {
@@ -27,13 +33,6 @@ public:
     //reset the arm to the initial position
      _SetInitial();
 
-    _PitchWeights[0]=-0.5;
-    _PitchWeights[1]=-0.25;
-    _PitchWeights[2]=-0.25;
-
-    _PitchOffsets[0]=45;
-    _PitchOffsets[1]=45;
-    _PitchOffsets[2]=0;
     return true;
   }
   void _SetInitial()
@@ -47,15 +46,15 @@ public:
       return;
 
     float M2,M3,M4,M5, M6;
-    M2=_PitchWeights[0]*angles[0]+_PitchOffsets[0];
-    M3=_PitchWeights[1]*angles[0]+_PitchOffsets[1];
-    M4=_PitchWeights[2]*angles[0]+_PitchOffsets[2];
+    M2=PitchWeights0*angles[0]+PitchOffsets0;
+    M3=PitchWeights1*angles[0]+PitchOffsets1;
+    M4=PitchWeights2*angles[0]+PitchOffsets2;
     M5=angles[2];
     M6=constrain(bending*100,10,73);
     
     Braccio.ServoMovement(5, 90, M2, M3, M4, M5,  M6);
 
-  #if true
+  #ifdef DEBUG_OUTPUT
     Serial.print(angles[0]);Serial.print(":  ");
     Serial.print(M2);Serial.print(", ");
     Serial.print(M3);Serial.print(", ");
