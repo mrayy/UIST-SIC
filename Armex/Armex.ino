@@ -2,8 +2,6 @@
 
 #include "Common.h"
 #include "MPU6050Control.h"
-
-
 #include "BraccioControl.h"
 
 
@@ -23,7 +21,7 @@ bool _printData=false;
 void setup() {
 
     // initialize serial communication
-    Serial.begin(38400);
+    Serial.begin(BAUD_RATE);
     while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
     mpus.Initialize();
@@ -51,10 +49,6 @@ void setup() {
 
 void PrintData(float* e)
 {
-
-    
-    //Braccio.ServoMovement(5,           0,  euler[2]*0.5+45, euler[2]*0.3+45,euler[2]*0.3+45, euler[1]+90,  73); 
-    
       Serial.print("tilt:");Serial.print(euler[0]);
       Serial.print(", Pan:");Serial.print(euler[1]);
       Serial.print(", Roll:");Serial.print(euler[2]);
@@ -122,5 +116,5 @@ void loop() {
     if(_printData)
       Serial.println();
 
-    //_printData=false;
+    _printData=false;
 }

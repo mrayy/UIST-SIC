@@ -119,37 +119,43 @@ public:
     return ypr[2]* RAD_DEG;
   }
 
+
+  bool CheckData()
+  {
+      // wait until new packets arrive
+      if (!mpuInterrupt && fifoCount < packetSize) {
+          return false;
+      }
+  
+      // reset interrupt flag and get INT_STATUS byte
+      //mpuInterrupt = false;
+      mpuIntStatus = mpu.getIntStatus();
+  
+      // get current FIFO count
+      fifoCount = mpu.getFIFOCount();
+      // check for overflow
+      if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+          // reset so we can continue cleanly
+          mpu.resetFIFO();
+          Serial.println(F("FIFO overflow!"));
+          return false;
+  
+      // otherwise, check for DMP data ready interrupt (this should happen frequently)
+      } else if (mpuIntStatus & 0x02) {
+          // wait for correct available data length, should be a VERY short wait
+          while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  
+          // read a packet from FIFO
+          mpu.getFIFOBytes(fifoBuffer, packetSize);
+      }
+   return true;
+  }
   bool Update()
   {
     
-    if (!dmpReady) return;
-    // wait until new packets arrive
-    while (!mpuInterrupt && fifoCount < packetSize) {
-        
-    }
-
-    // reset interrupt flag and get INT_STATUS byte
-    mpuInterrupt = false;
-    mpuIntStatus = mpu.getIntStatus();
-
-    // get current FIFO count
-    fifoCount = mpu.getFIFOCount();
-    // check for overflow
-    if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-        // reset so we can continue cleanly
-        mpu.resetFIFO();
-        Serial.println(F("FIFO overflow!"));
-        return false;
-
-    // otherwise, check for DMP data ready interrupt (this should happen frequently)
-    } else if (mpuIntStatus & 0x02) {
-        // wait for correct available data length, should be a VERY short wait
-        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
-
-        // read a packet from FIFO
-        mpu.getFIFOBytes(fifoBuffer, packetSize);
-    }
-
+    if (!dmpReady) return false;
+    if(!CheckData())
+      return false;
       mpu.dmpGetQuaternion(&q, fifoBuffer);
       mpu.dmpGetGravity(&gravity, &q);
       mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -180,7 +186,7 @@ public:
           Serial.println("Gyro Z axis calibration failed");}
 
        Serial.println("Calibrating Accelerometer");
-       
+       /*
       if(autocalibrate('a','x',mpu)){
                Serial.println("Accel X axis calibrated");
       }else{
@@ -225,17 +231,23 @@ public:
         Serial.print(F("DMP Initialization failed (code "));
         Serial.print(devStatus);
         Serial.println(F(")"));
-    }
+    }*/
+  }
+
+  void OnDataReady()
+  {
+    mpuInterrupt = true;
+    
   }
 };
 
    MPUStatus _mpu[2]={MPUStatus(0x69),MPUStatus(0x68)};
 
 void dmpDataReady0() {
-    _mpu[0].mpuInterrupt = true;
+    _mpu[0].OnDataReady();
 }
 void dmpDataReady1() {
-    _mpu[1].mpuInterrupt = true;
+    _mpu[1].OnDataReady();
 }
 
 class BendingSensor
@@ -448,13 +460,13 @@ class DetectionManager
       case 0://actuation state
       if(dt>DETECTION_TIME)
       {
-        Serial.print("Check:  ");
-        Serial.println(angle);
+        //Serial.print("Check:  ");
+        //Serial.println(angle);
         if(angle>DETECTION_THRESHOLD && detectOpen || 
            angle<-DETECTION_THRESHOLD && !detectOpen)
         {
           state=1;
-        Serial.println("State 1 ");
+          Serial.println("State 1 ");
         }
         currentMillis=millis();
         currentTilt=angle;

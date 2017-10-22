@@ -3,6 +3,8 @@
 
 //#define DEBUG_OUTPUT
 
+#define BAUD_RATE 38400
+
 #define FLEX_PIN A1
 
 #define MPU_SAMPLES_COUNT 5
