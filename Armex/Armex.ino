@@ -26,7 +26,7 @@ void setup() {
 
     mpus.Initialize();
     bending.Initialize();
-    //braccio.Initialize();
+    braccio.Initialize();
 
     
     // wait for ready
